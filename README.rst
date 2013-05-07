@@ -85,7 +85,7 @@ launch the Tryton server nor client.
 
 After that, you can follow the next commands from 'tryton-buildout' directory:
 
-#. ./build/bin/buildout -c user.cfg
+#. ./build/bin/buildout -c userdoc.cfg
 #. ./create-doc-symlinks.sh
 #. cd ../userdoc
 #. pip install -r requirements.txt
