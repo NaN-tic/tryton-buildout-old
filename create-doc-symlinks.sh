@@ -4,10 +4,10 @@
 # src=$2
 
 dst=../userdoc
+src0=../trytond-doc
 src=../trytond/trytond/modules
 
-
-if [[ -z "$dst" || -z "$src" ]]; then
+if [[ -z "$dst" || -z "$src" || -z "$src0" ]]; then
 	echo "Use create-symlinks.sh <destination_directory> <source_path>"
 	echo
 	echo "directory should point to the addons directory of the server"
@@ -16,9 +16,17 @@ fi
 
 if [ -d "$dst" ]; then
     pushd $dst
+    srclog0=$(cd $src0 2>&1)
+    if [ -n "$srclog0" ]; then
+        echo "the '$src0' as source directory must exist."
+        echo
+        echo " Err: '$srclog0'"
+        echo
+        exit 1
+    fi
     srclog=$(cd $src 2>&1)
     if [ -n "$srclog" ]; then
-        echo "the '$src' as destination directory must exist."
+        echo "the '$src' as source directory must exist."
         echo
         echo " Err: '$srclog'"
         echo
@@ -50,10 +58,11 @@ fi
 #	exit 1
 #fi
 
-pushd $dst 
+pushd $dst
 
 # We exclude paths with hidden directories
-list=$(find $src -type d -iname "doc" | grep -v "/\.")
+list=$(find $src -type d -name "doc" | grep -v "/\.")
+list+=$(find $src0 -type d -name "doc" | grep -v "/\.")
 
 for i in $list; do
 #    if ! test -f "$i/../tryton.cfg"; then
@@ -74,6 +83,6 @@ for i in $list; do
 done
 
 echo "create symlink for the master_root file"
-ln -s $src/trytond-doc/trytond_doc/userdoc/index.rst.es index.rst
+ln -s $src0/trytond_doc/userdoc/index.rst.es index.rst
 
 popd
