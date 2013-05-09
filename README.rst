@@ -53,6 +53,7 @@ repository):
 #. cd tryton-buildout
 #. pip install -r requirements.txt
 #. python bootstrap.py
+#. ./build/bin/buildout -c base.cfg
 #. ./build/bin/buildout -c buildout.cfg
 #. ./create-symlinks.sh
 
