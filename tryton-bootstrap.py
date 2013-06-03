@@ -35,19 +35,21 @@ popd
 INITIAL_PATH = path.getcwd()
 
 
+def _exit(message=None):
+    if path.getcwd() != INITIAL_PATH:
+        os.chdir(INITIAL_PATH)
+    if not message:
+        return sys.exit(0)
+    sys.exit(message)
+
+
 def _ask_ok(prompt, default_answer=None):
     ok = raw_input(prompt) or default_answer
     if ok in ('y', 'ye', 'yes'):
         return True
     if ok in ('n', 'no', 'nop', 'nope'):
         return False
-    print "Yes or no, please"
-
-
-def _exit(message):
-    if path.getcwd() != INITIAL_PATH:
-        os.chdir(INITIAL_PATH)
-    sys.exit(message)
+    _exit("Yes or no, please")
 
 
 def _check_required_file(filename, directory_name, directory_path):
@@ -59,6 +61,7 @@ def _check_required_file(filename, directory_name, directory_path):
 def activate_virtualenv(options):
     virtualenv = os.environ.get('VIRTUAL_ENV')
     if virtualenv:
+        options.virtualenv = True
         return
     if not options.virtualenv and 'WORKON_HOME' in os.environ:
         # virtualenvwrapper avilable. confirm don't activate virtualenv
@@ -67,6 +70,9 @@ def activate_virtualenv(options):
                 'Answer "yes" to continue without activate a virtualenv. '
                 '[Yes/no (activate)] ', 'y'):
             return
+        options.virtualenv = True
+    elif not options.virtualenv:
+        return
 
     if 'WORKON_HOME' not in os.environ:
         _exit('ERROR: To could activate a virtualenv it\'s required the '
@@ -104,6 +110,20 @@ def clone_buildout(options):
 def install_requirements(options):
     if not options.requirements:
         return
+    if not options.virtualenv and os.geteuid() != 0:
+        resp = raw_input('It can\'t install requirements because you aren\'t '
+            'the Root user and you aren\'t in a Virtualenv. You will have to '
+            'install requirements manually as root with command:\n'
+            '  $ pip install [--upgrade] -r requirements.txt\n'
+            'What do you want to do now: skip requirements install or abort '
+            'bootstrap? [Skip/abort] ')
+        if resp.lower() not in ('', 's', 'skip', 'a', 'abort'):
+            _exit('Invalid answer.')
+        if resp in ('a', 'abort'):
+            _exit()
+        if resp in ('', 's', 'skip'):
+            return
+
     from sh import pip
     print 'Installing dependencies.'
     _check_required_file('requirements.txt', 'buildout', path.getcwd())
@@ -229,7 +249,7 @@ def prepare_userdoc(options):
     print "Preparing user documentation system."
     options.userdoc_path = options.project_path.joinpath('userdoc')
     if not options.userdoc_path.exists():
-        sys.exit('"userdoc" directory doesn\'t exits in project\'s root '
+        _exit('"userdoc" directory doesn\'t exits in project\'s root '
             'directory. Please, execute buildout with userdoc.cfg file.')
     sh.Command('./create-doc-symlinks.sh')(_out=options.output,
         _err=sys.stderr)
