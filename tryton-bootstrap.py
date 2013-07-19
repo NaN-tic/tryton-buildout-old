@@ -26,7 +26,7 @@ directori base del nou projecte.
 hg clone ssh://hg@hg.bitbucket.org/nantic/tryton-buildout buildout
 pushd buildout
 pip install -r requirements.txt
-python bootstrap.py
+python bootstrap.py -v 2.1.1
 ./build/bin/buildout -c base.cfg
 ./build/bin/buildout -c buildout.cfg
 popd
@@ -196,7 +196,8 @@ def bootstrap_buildout(options):
     print 'Calling Buildout bootstrap.py script.'
     _check_required_file('bootstrap.py', 'buildout', path.getcwd())
     try:
-        python('bootstrap.py', _out=options.output, _err=sys.stderr)
+        python('bootstrap.py', '-v', '2.1.1', _out=options.output,
+            _err=sys.stderr)
     except:
         _exit("Error executing 'bootstrap.py' script from %s" % path.getcwd())
     print ""
