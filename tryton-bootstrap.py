@@ -1,22 +1,7 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
-"""Inicialitzador de projecte
-
-Inicialitza un projecte creant l'estructura de directoris necessària i
-obtenint el codi dels repositoris.
-Pot ser executat des del directori del repositori 'tryton-buildout' o
-descarregant-se el fitxer i executant-lo des del directori base del projecte
-de client.
-"""
-
-from datetime import date
-import os
-import sys
-from optparse import OptionParser
-from path import path
-
-USAGE = '''\
-[INICIALITZADOR PROJECTES TRYTON] tryton-buildout.py [options]
+'''[INICIALITZADOR PROJECTES TRYTON]
+tryton-buildout.py [options]
 
 Inicialitza un projecte Tryton.
 
@@ -32,6 +17,12 @@ python bootstrap.py -v 2.1.1
 popd
 '''
 
+from datetime import date
+import os
+import sys
+from optparse import OptionParser
+from path import path
+
 INITIAL_PATH = path.getcwd()
 
 
@@ -45,9 +36,9 @@ def _exit(message=None):
 
 def _ask_ok(prompt, default_answer=None):
     ok = raw_input(prompt) or default_answer
-    if ok in ('y', 'ye', 'yes'):
+    if ok.lower() in ('y', 'ye', 'yes'):
         return True
-    if ok in ('n', 'no', 'nop', 'nope'):
+    if ok.lower() in ('n', 'no', 'nop', 'nope'):
         return False
     _exit("Yes or no, please")
 
@@ -195,6 +186,8 @@ def bootstrap_buildout(options):
     from sh import python
     print 'Calling Buildout bootstrap.py script.'
     _check_required_file('bootstrap.py', 'buildout', path.getcwd())
+    if not path.getcwd().joinpath('build').exists():
+        path.getcwd().joinpath('build').mkdir()
     try:
         python('bootstrap.py', '-v', '2.1.1', _out=options.output,
             _err=sys.stderr)
@@ -261,7 +254,7 @@ def prepare_userdoc(options):
 
 
 if __name__ == '__main__':
-    parser = OptionParser(usage=USAGE)
+    parser = OptionParser(usage=__doc__)
     parser.add_option('-e', '--virtualenv', action='store_true', default=False,
         help='Install project in a virtualenv. If virtualenv is not active, '
         'it try to activate a virtualenv with the name of project directory '
